@@ -1,0 +1,61 @@
+using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Texts;
+
+
+namespace Server
+{
+
+    class Class1
+    {
+
+        static void Main(String[] args)
+        {
+
+            IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostByName);
+            IPAddress ipAddr = ipHost.AddressList[0];
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 11111);
+
+
+            Socket listener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                listener.Bind(localEndPoint);
+                listener.Listen(10);
+
+                while (true)
+                {
+                    Console.WriteLine("Waiting for connection:");
+                    Socket clientSocket = listener.Accept();
+
+                    byte[] bytes = new Byte[1024];
+                    string data = null;
+
+                    while (true)
+                    {
+
+                        int numByte = clientSocket.Receive(bytes);
+
+                        data += Encoding.ASCII.GetString(bytes, 0, numByte);
+
+                        if (data.IndexOf("<EOF>") > -1)
+                            break;
+                    }
+                    Console.WriteLine("message from user:", data);
+                    byte[] message = Encoding.ASCII.GetBytes("Test Server");
+
+                    clientSocket.Send(message);
+
+                }
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
+        }
+    }
+}
